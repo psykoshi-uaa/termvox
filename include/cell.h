@@ -9,6 +9,7 @@ struct Cell {
 	int col[4];
 	char fill;
 	Pos *pos;
+	Pos *draw_origin;
 	int distance;
 	struct Cell* next;
 } typedef Cell;
@@ -21,8 +22,9 @@ void PushCellStack(Cell* bottom_cell, Cell* new_cell);
 Cell* PopCell(Cell* cell_to_pop);
 int CellOffset(int y, int x);
 void UpdateCellDistance(Pos origin, Cell* cell);
+void UpdateCellDrawOrigin(Cell* cell, Pos* main_origin, Pos* cam_origin, float rotation);
 
-void PrintCell(int y, int x, Cell* cell, int col_index, int bold);
-void PrintCellStack(Pos* origin1, Pos* origin2, float rotation, Cell* cell, int col_index, int bold);
-void PrintCellFromStack(Pos* origin1, Pos* origin2, float rotation, Cell* bottom_cell, int col_index, int bold, int z);
+void PrintCell(Cell* cell, int y, int x, int col_index, int bold);
+void PrintCellStack(Cell* cell, int col_index, int bold);
+void PrintCellFromStack(Cell* bottom_cell, int col_index, int bold, int z);
 #endif

@@ -9,6 +9,8 @@ Cell* InitCell(int index, int y, int x, int z){
 	SetCell(init_cell, index);
 	Pos* cell_pos = InitPos(y, x, z);
 	init_cell->pos = cell_pos;
+	Pos* cell_draw_origin = InitPos(y, x, z);
+	init_cell->draw_origin = cell_draw_origin;
 	init_cell->next = NULL;
 	return init_cell;
 }
@@ -35,21 +37,21 @@ void SetCell(Cell* cell, int index){
 		cell->col[1] = V_W;
 		cell->col[2] = V_W;
 		cell->col[3] = W_V;
-		cell->fill = '#';
+		cell->fill = '/';
 		break;
 	case GRASS_INDEX:
 		cell->col[0] = G_V;
 		cell->col[1] = G_G;
 		cell->col[2] = G_G;
 		cell->col[3] = V_G;
-		cell->fill = '/';
+		cell->fill = '^';
 		break;
 	case WATER_INDEX:
 		cell->col[0] = V_V;
-		cell->col[1] = W_B;
-		cell->col[2] = W_B;
+		cell->col[1] = W_C;
+		cell->col[2] = C_C;
 		cell->col[3] = C_B;
-		cell->fill = 'W';
+		cell->fill = '~';
 		break;
 	default:
 		break;
@@ -60,6 +62,7 @@ void SetCell(Cell* cell, int index){
 void FreeCell(Cell* cell_to_free){
 	if( cell_to_free != NULL ){
 		FreePos(cell_to_free->pos);
+		FreePos(cell_to_free->draw_origin);
 		free(cell_to_free);
 		cell_to_free = NULL;
 	}
@@ -96,14 +99,22 @@ int CellOffset(int y, int x){
 	return 0;
 }
 
-void UpdateCellDistance(Pos origin, Cell* cell){
-	int y = origin.y + MAX_CELLS_1D / 2;
-	int x = origin.x + MAX_CELLS_1D / 2;
+void UpdateCellDistance(Pos draw_origin, Cell* cell){
+	int y = draw_origin.y + MAX_CELLS_1D / 2;
+	int x = draw_origin.x + MAX_CELLS_1D / 2;
 	cell->distance = sqrt(pow(cell->pos->y - y, 2) + pow(cell->pos->x - x, 2));
 }
 
+void UpdateCellDrawOrigin(Cell* cell, Pos* main_draw_origin, Pos* cam_draw_origin, float rotation){
+	cell->draw_origin->y = ((cell->pos->x - MAX_CELLS_1D / 2) * sin(rotation) + ((cell->pos->y - MAX_CELLS_1D / 2) * cos(rotation)));
+	cell->draw_origin->x = ((cell->pos->x - MAX_CELLS_1D / 2) * cos(rotation) - ((cell->pos->y - MAX_CELLS_1D / 2) * sin(rotation)));
+	cell->draw_origin->y += cam_draw_origin->y;
+	cell->draw_origin->x += cam_draw_origin->x;
+}
+
+
 //.2
-void PrintCell(int y, int x, Cell* cell, int col_index, int bold){
+void PrintCell(Cell* cell, int y, int x, int col_index, int bold){
 	int yy = y - cell->pos->z;
 	if( bold )
 		attron(A_BOLD);
@@ -114,29 +125,19 @@ void PrintCell(int y, int x, Cell* cell, int col_index, int bold){
 		attroff(A_BOLD);
 }
 
-void PrintCellStack(Pos* origin1, Pos* origin2, float rotation, Cell* bottom_cell, int col_index, int bold){
-	int origin_y = ((bottom_cell->pos->x - MAX_CELLS_1D / 2) * sin(rotation) + ((bottom_cell->pos->y - MAX_CELLS_1D / 2) * cos(rotation)));
-	int origin_x = ((bottom_cell->pos->x - MAX_CELLS_1D / 2) * cos(rotation) - ((bottom_cell->pos->y - MAX_CELLS_1D / 2) * sin(rotation)));
-	origin_y += origin2->y;
-	origin_x += origin2->x;
-	
+void PrintCellStack(Cell* bottom_cell, int col_index, int bold){
 	Cell* temp = bottom_cell;
 	while( temp != NULL ){
-		PrintCell(origin_y, origin_x, temp, col_index, bold);
+		PrintCell(temp, bottom_cell->draw_origin->y, bottom_cell->draw_origin->x, col_index, bold);
 		temp = temp->next;
 	}
 }
 
-void PrintCellFromStack(Pos* origin1, Pos* origin2, float rotation, Cell* bottom_cell, int col_index, int bold, int z){
-	int origin_y = ((bottom_cell->pos->x - MAX_CELLS_1D / 2) * sin(rotation) + ((bottom_cell->pos->y - MAX_CELLS_1D / 2) * cos(rotation)));
-	int origin_x = ((bottom_cell->pos->x - MAX_CELLS_1D / 2) * cos(rotation) - ((bottom_cell->pos->y - MAX_CELLS_1D / 2) * sin(rotation)));
-	origin_y += origin2->y;
-	origin_x += origin2->x;
-	
+void PrintCellFromStack(Cell* bottom_cell, int col_index, int bold, int z){
 	Cell* temp = bottom_cell;
 	while( (temp != NULL) && (temp->pos->z != z) ){
 		temp = temp->next;
 	}
 	if( temp != NULL )
-		PrintCell(origin_y, origin_x, temp, col_index, bold);
+		PrintCell(temp, bottom_cell->draw_origin->y, bottom_cell->draw_origin->x, col_index, bold);
 }

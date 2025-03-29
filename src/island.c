@@ -45,41 +45,65 @@ void FreeIsland(Island* island){
 }
 
 void IslandGenerateLand(Island* island){
+//TO BE DELETED, FOR DEBUGGING ----- START
 	for( int y=0; y<MAX_CELLS_1D; y++) {
 		for( int x=0; x<MAX_CELLS_1D; x++ ){
 			for( int z=0; z<8; z++ ){
 				int cell_index = VOID_INDEX;
-				if( z < 4 )
+				if( z < 3 )
 					cell_index = CLIFF_INDEX;
-				else
+				else if( z < 6 )
 					cell_index = DIRT_INDEX;
+				else
+					cell_index = GRASS_INDEX;
 				Cell* new_cell = InitCell(cell_index, y, x, z);
 				PushCellStack(island->bottom_cell[CellOffset(y, x)], new_cell);
 				UpdateCellDistance(*island->origin, island->bottom_cell[CellOffset(y, x)]);
 			}
 		}
 	}
-//TO BE DELETED, FOR DEBUGGING
-	for( int i=0;i<24;i++ ){
-		Cell* new_cell = InitCell(GRASS_INDEX, 1, 1, 9+i);
+	Cell* new_cell = NULL;
+	int cell_index = CLIFF_INDEX;
+	for( int i=0;i<8;i++ ){
+		new_cell = InitCell(cell_index, 1, 1, 9+i);
 		PushCellStack(island->bottom_cell[CellOffset(1, 1)], new_cell);
-		new_cell = InitCell(GRASS_INDEX, 2, 2, 9+i);
+		new_cell = InitCell(cell_index, 2, 2, 9+i);
 		PushCellStack(island->bottom_cell[CellOffset(5, 5)], new_cell);
-		new_cell = InitCell(GRASS_INDEX, 1, 2, 9+i);
+		new_cell = InitCell(cell_index, 1, 2, 9+i);
 		PushCellStack(island->bottom_cell[CellOffset(1, 2)], new_cell);
-		new_cell = InitCell(GRASS_INDEX, 2, 1, 9+i);
+		new_cell = InitCell(cell_index, 2, 1, 9+i);
 		PushCellStack(island->bottom_cell[CellOffset(2, 1)], new_cell);
 	}
-	for( int i=0;i<24;i++ ){
-		Cell* new_cell = InitCell(GRASS_INDEX, 4, 4, 9+i);
+	cell_index = VOID_INDEX;
+	new_cell = InitCell(cell_index, 1, 1, 17);
+	PushCellStack(island->bottom_cell[CellOffset(1, 1)], new_cell);
+	new_cell = InitCell(cell_index, 2, 2, 17);
+	PushCellStack(island->bottom_cell[CellOffset(2, 2)], new_cell);
+	new_cell = InitCell(cell_index, 1, 2, 17);
+	PushCellStack(island->bottom_cell[CellOffset(1, 2)], new_cell);
+	new_cell = InitCell(cell_index, 2, 1, 17);
+	PushCellStack(island->bottom_cell[CellOffset(2, 1)], new_cell);
+	cell_index = CLIFF_INDEX;
+	for( int i=0;i<8;i++ ){
+		new_cell = InitCell(cell_index, 4, 4, 9+i);
 		PushCellStack(island->bottom_cell[CellOffset(4, 4)], new_cell);
-		new_cell = InitCell(GRASS_INDEX, 5, 5, 9+i);
+		new_cell = InitCell(cell_index, 5, 5, 9+i);
 		PushCellStack(island->bottom_cell[CellOffset(5, 5)], new_cell);
-		new_cell = InitCell(GRASS_INDEX, 4, 5, 9+i);
+		new_cell = InitCell(cell_index, 4, 5, 9+i);
 		PushCellStack(island->bottom_cell[CellOffset(4, 5)], new_cell);
-		new_cell = InitCell(GRASS_INDEX, 5, 4, 9+i);
+		new_cell = InitCell(cell_index, 5, 4, 9+i);
 		PushCellStack(island->bottom_cell[CellOffset(5, 4)], new_cell);
 	}
+	cell_index = DIRT_INDEX;
+	new_cell = InitCell(cell_index, 4, 4, 17);
+	PushCellStack(island->bottom_cell[CellOffset(4, 4)], new_cell);
+	new_cell = InitCell(cell_index, 5, 5, 17);
+	PushCellStack(island->bottom_cell[CellOffset(5, 5)], new_cell);
+	new_cell = InitCell(cell_index, 4, 5, 17);
+	PushCellStack(island->bottom_cell[CellOffset(4, 5)], new_cell);
+	new_cell = InitCell(cell_index, 5, 4, 17);
+	PushCellStack(island->bottom_cell[CellOffset(5, 4)], new_cell);
+//TO BE DELETED, FOR DEBUGGING ----- END
 }
 
 void IslandGenerateWater(Island* island){
@@ -105,19 +129,25 @@ void IslandUpdateCamera(Island* island, char user_inp){
 		UpdateMoveKeys(island->camera_rotate_key, user_inp);
 
 		TranslateCamera(island->camera, *island->camera_translate_key, *island->camera_rotate_key);
-		RotateCamera(island->camera, *island->camera_rotate_key, 0.1);		//MAGIC NUMBER
+		RotateCamera(island->camera, *island->camera_rotate_key, 10);		//MAGIC NUMBER
 	}
 }
 
 void IslandEngine(Island* island, char user_inp){
+	float cam_rot_z = island->camera->rotation;
 	IslandUpdateCamera(island, user_inp);
 	for( int z=0; z<island->camera->origin->z; z++ ){
 		for( int y=0; y<MAX_CELLS_1D; y++) {
 			for( int x=0; x<MAX_CELLS_1D; x++ ){
+				if( z == 0 ){
+					UpdateCellDrawOrigin(
+						island->bottom_cell[CellOffset(y, x)],
+						island->origin,
+						island->camera->origin,
+						island->camera->rotation
+					);
+				}
 				PrintCellFromStack(
-					island->origin,
-					island->camera->origin,
-					island->camera->rotation,
 					island->bottom_cell[CellOffset(y, x)],
 					island->time_of_day_shade,
 					island->is_bright_out,
@@ -131,6 +161,6 @@ void IslandEngine(Island* island, char user_inp){
 void PrintIslandDebug(Island* island){
 	mvprintw(0, 54, "island debug menu:");
 	mvprintw(1, 50, "camera origin: { %i, %i, %i }", island->camera->origin->y, island->camera->origin->x, island->camera->origin->z);
-	mvprintw(3, 50, "camera z rot: %f", island->camera->rotation);
-	mvprintw(4, 50, "time of day: %f", island->time_of_day);
+	mvprintw(2, 50, "camera z rot: %f", island->camera->rotation);
+	mvprintw(3, 50, "time of day: %f", island->time_of_day);
 }

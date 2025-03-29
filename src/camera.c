@@ -33,11 +33,12 @@ void TranslateCamera(Camera* camera, MoveKeys translate_key, MoveKeys vert_key){
 
 void RotateCamera(Camera* camera, MoveKeys rotate_key, float scale){
 	int dir = rotate_key.left->is_pressed - rotate_key.right->is_pressed;
-
-	camera->rotation += dir * scale;
-
-	if( camera->rotation <= scale)
+	camera->rotation += dir / scale;
+	if( camera->rotation <= 0)
 		camera->rotation = 2*M_PI;
 	else if( camera->rotation >= 2*M_PI)
-		camera->rotation = scale;
+		camera->rotation = 0;
+	//camera->rotation = floor(camera->rotation / scale);
+	//camera->rotation *= scale;
 }
+
