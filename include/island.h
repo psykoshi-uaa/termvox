@@ -20,6 +20,8 @@ struct Island {
 Island* InitIsland(Pos* origin);
 void FreeIsland(Island* island);
 void IslandGenerateLand(Island* island);
+void IslandGenerateLayer(Island* island, int cell_index, Pos origin, Pos size);
+void IslandGenerateHill(Island* island, int cell_index, Pos hill_origin, int base_radius, int height);
 void IslandGenerateWater(Island* island);
 void IslandUpdateTimeOfDay(Island* island);
 void IslandUpdateCellDistance(Cell* cell);

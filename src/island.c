@@ -46,64 +46,46 @@ void FreeIsland(Island* island){
 
 void IslandGenerateLand(Island* island){
 //TO BE DELETED, FOR DEBUGGING ----- START
-	for( int y=0; y<MAX_CELLS_1D; y++) {
-		for( int x=0; x<MAX_CELLS_1D; x++ ){
-			for( int z=0; z<8; z++ ){
-				int cell_index = VOID_INDEX;
-				if( z < 3 )
-					cell_index = CLIFF_INDEX;
-				else if( z < 6 )
-					cell_index = DIRT_INDEX;
-				else
-					cell_index = GRASS_INDEX;
-				Cell* new_cell = InitCell(cell_index, y, x, z);
-				PushCellStack(island->bottom_cell[CellOffset(y, x)], new_cell);
-				UpdateCellDistance(*island->origin, island->bottom_cell[CellOffset(y, x)]);
+	Pos layer_origin = {12, 12, 1};
+	Pos layer_size = {30, 30, 1};
+	int new_height = layer_origin.z + 2;
+	for( layer_origin.z; layer_origin.z<new_height; layer_origin.z++ ){
+		IslandGenerateLayer(island, CLIFF_INDEX, layer_origin, layer_size);
+	}
+	new_height = layer_origin.z + 2;
+	for( layer_origin.z; layer_origin.z<new_height; layer_origin.z++ ){
+		IslandGenerateLayer(island, DIRT_INDEX, layer_origin, layer_size);
+	}
+
+	IslandGenerateHill(island, GRASS_INDEX, layer_origin, 5, 20);
+//TO BE DELETED, FOR DEBUGGING ----- END
+}
+
+void IslandGenerateLayer(Island* island, int cell_index, Pos origin, Pos size){
+	for( int y=0; y<size.y; y++){
+		for( int x=0; x<size.x; x++){
+			int new_y = y + origin.y - size.y/2;
+			int new_x = x + origin.x - size.x/2;
+			int new_z = origin.z;
+			Cell* new_cell = InitCell(cell_index, new_y, new_x, new_z);
+			if( (new_y >= 0) && (new_y < MAX_CELLS_1D)
+			&& (new_x >= 0) && (new_x < MAX_CELLS_1D) ){
+				PushCellStack(island->bottom_cell[CellOffset(new_y, new_x)], new_cell);
 			}
 		}
 	}
-	Cell* new_cell = NULL;
-	int cell_index = CLIFF_INDEX;
-	for( int i=0;i<8;i++ ){
-		new_cell = InitCell(cell_index, 1, 1, 9+i);
-		PushCellStack(island->bottom_cell[CellOffset(1, 1)], new_cell);
-		new_cell = InitCell(cell_index, 2, 2, 9+i);
-		PushCellStack(island->bottom_cell[CellOffset(5, 5)], new_cell);
-		new_cell = InitCell(cell_index, 1, 2, 9+i);
-		PushCellStack(island->bottom_cell[CellOffset(1, 2)], new_cell);
-		new_cell = InitCell(cell_index, 2, 1, 9+i);
-		PushCellStack(island->bottom_cell[CellOffset(2, 1)], new_cell);
+}
+
+void IslandGenerateHill(Island *island, int cell_index, Pos hill_origin, int base_radius, int height){
+	Pos layer_origin = hill_origin;
+	Pos layer_size = { base_radius*2, base_radius*2, 1};
+	for( hill_origin.z; hill_origin.z<height; hill_origin.z++ ){
+		if(( layer_size.y <= 0) && (layer_size.x <= 0) )
+			return;
+		IslandGenerateLayer(island, cell_index, hill_origin, layer_size);
+		layer_size.y --;
+		layer_size.x --;
 	}
-	cell_index = VOID_INDEX;
-	new_cell = InitCell(cell_index, 1, 1, 17);
-	PushCellStack(island->bottom_cell[CellOffset(1, 1)], new_cell);
-	new_cell = InitCell(cell_index, 2, 2, 17);
-	PushCellStack(island->bottom_cell[CellOffset(2, 2)], new_cell);
-	new_cell = InitCell(cell_index, 1, 2, 17);
-	PushCellStack(island->bottom_cell[CellOffset(1, 2)], new_cell);
-	new_cell = InitCell(cell_index, 2, 1, 17);
-	PushCellStack(island->bottom_cell[CellOffset(2, 1)], new_cell);
-	cell_index = CLIFF_INDEX;
-	for( int i=0;i<8;i++ ){
-		new_cell = InitCell(cell_index, 4, 4, 9+i);
-		PushCellStack(island->bottom_cell[CellOffset(4, 4)], new_cell);
-		new_cell = InitCell(cell_index, 5, 5, 9+i);
-		PushCellStack(island->bottom_cell[CellOffset(5, 5)], new_cell);
-		new_cell = InitCell(cell_index, 4, 5, 9+i);
-		PushCellStack(island->bottom_cell[CellOffset(4, 5)], new_cell);
-		new_cell = InitCell(cell_index, 5, 4, 9+i);
-		PushCellStack(island->bottom_cell[CellOffset(5, 4)], new_cell);
-	}
-	cell_index = DIRT_INDEX;
-	new_cell = InitCell(cell_index, 4, 4, 17);
-	PushCellStack(island->bottom_cell[CellOffset(4, 4)], new_cell);
-	new_cell = InitCell(cell_index, 5, 5, 17);
-	PushCellStack(island->bottom_cell[CellOffset(5, 5)], new_cell);
-	new_cell = InitCell(cell_index, 4, 5, 17);
-	PushCellStack(island->bottom_cell[CellOffset(4, 5)], new_cell);
-	new_cell = InitCell(cell_index, 5, 4, 17);
-	PushCellStack(island->bottom_cell[CellOffset(5, 4)], new_cell);
-//TO BE DELETED, FOR DEBUGGING ----- END
 }
 
 void IslandGenerateWater(Island* island){
@@ -129,7 +111,7 @@ void IslandUpdateCamera(Island* island, char user_inp){
 		UpdateMoveKeys(island->camera_rotate_key, user_inp);
 
 		TranslateCamera(island->camera, *island->camera_translate_key, *island->camera_rotate_key);
-		RotateCamera(island->camera, *island->camera_rotate_key, 10);		//MAGIC NUMBER
+		RotateCamera(island->camera, *island->camera_rotate_key, 20);		//MAGIC NUMBER
 	}
 }
 
