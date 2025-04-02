@@ -3,8 +3,8 @@
 
 void InitColors();
 
-#define MAX_CELLS_1D 20
-#define MAX_CELLS_2D 400
+#define MAX_CELLS_1D 400
+#define MAX_CELLS_2D 160000
 
 
 #define VOID_INDEX 1

@@ -8,16 +8,16 @@ struct Keybind {
 } typedef Keybind; 
 
 struct MoveKeys {
-	Keybind* up;
-	Keybind* down;
-	Keybind* left;
-	Keybind* right;
+	Keybind up;
+	Keybind down;
+	Keybind left;
+	Keybind right;
 } typedef MoveKeys;
 
 char GetCharInput(int argn, ...);
-Keybind* InitKeybind(char key);
-MoveKeys* InitMoveKeys(char up, char down, char left, char right);
-void FreeKeybind(Keybind* key);
-void FreeMoveKeys(MoveKeys* move_keys);
+Keybind InitKeybind(char key);
+MoveKeys InitMoveKeys(char up, char down, char left, char right);
 void UpdateMoveKeys(MoveKeys* move_keys, char key_pressed);
+//void FreeKeybind(Keybind* key);
+//void FreeMoveKeys(MoveKeys* move_keys);
 #endif
