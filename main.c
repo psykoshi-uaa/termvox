@@ -71,10 +71,15 @@ void ScreenWipe(){
 	int screensize_h;
 	int screensize_w;
 	getmaxyx(stdscr, screensize_h, screensize_w);
-
+	char* screenline[screensize_h * screensize_w];
 	for( int y=0; y<screensize_h; y++ ){
-		for( int x=0; x<screensize_w; x++ ){
-			mvaddch(y, x, ' ');
+		for( int x=0; x<screensize_h; x++ ){
+			*screenline[(y*screensize_h) + x] = 'X';
+		if( x == screensize_w )
+			*screenline[(y*screensize_h) + x] = '\n';
 		}
 	}
+
+	//char word = 'w\nw';
+	mvprintw(0, 0, "%s", screenline);
 }
