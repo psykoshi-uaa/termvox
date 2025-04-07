@@ -5,13 +5,13 @@
 #include "input.h"
 
 struct Camera {
-	Pos* origin;
+	Pos origin;
 	float rotation;
 } typedef Camera;
 
-Camera* InitCamera();
+Camera InitCamera();
 void SetCameraPos(Camera* camera, int y, int x, int z);
-void FreeCamera(Camera* camera);
 void TranslateCamera(Camera* camera, MoveKeys translate_key, MoveKeys vert_key);
 void RotateCamera(Camera* camera, MoveKeys rotate_key, float scale);
+//void FreeCamera(Camera* camera);
 #endif

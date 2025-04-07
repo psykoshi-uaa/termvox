@@ -8,41 +8,34 @@
 #include "../include/cell.h"
 #include "../include/camera.h"
 
-Island* InitIsland(Pos* origin){
-	Island* init_island = malloc(sizeof(Island));
+Island InitIsland(Pos origin){
+	Island init_island;
 
-	init_island->time_of_day = 9.0f;
-	init_island->time_inc = 0.1f;
-	init_island->origin = origin;
-	init_island->camera = InitCamera();
-	SetCameraPos(init_island->camera, MAX_CELLS_1D, MAX_CELLS_1D, 30);
-	init_island->camera_translate_key = InitMoveKeys('w', 's', 'a', 'd');
-	init_island->camera_rotate_key = InitMoveKeys('k', 'i', 'j', 'l');
+	init_island.time_of_day = 9.0f;
+	init_island.time_inc = 0.1f;
+	init_island.origin = origin;
+	init_island.camera = InitCamera();
+	SetCameraPos(&init_island.camera, MAX_CELLS_1D, MAX_CELLS_1D, 30);
+	init_island.camera_translate_key = InitMoveKeys('w', 's', 'a', 'd');
+	init_island.camera_rotate_key = InitMoveKeys('k', 'i', 'j', 'l');
 
 	for( int y=0; y<MAX_CELLS_1D; y++ ){
 		for( int x=0; x<MAX_CELLS_1D; x++ ){
 			Cell* new_cell = InitCell(VOID_INDEX, y, x, 0);
-			init_island->bottom_cell[CellOffset(y, x)] = new_cell;
-			UpdateCellDistance(*init_island->origin, init_island->bottom_cell[CellOffset(y, x)]);
+			init_island.bottom_cell[CellOffset(y, x)] = new_cell;
+			UpdateCellDistance(init_island.origin, init_island.bottom_cell[CellOffset(y, x)]);
 		}
 	}
 	return init_island;
 }
 
 void FreeIsland(Island* island){
-	if( island != NULL ){
-		for( int y=0; y<MAX_CELLS_1D; y++) {
-			for( int x=0; x<MAX_CELLS_1D; x++ ){ FreeCellStack(island->bottom_cell[CellOffset(y, x)]); }
-		}
-
-		FreePos(island->origin);
-		FreeCamera(island->camera);
-		FreeMoveKeys(island->camera_translate_key);
-		FreeMoveKeys(island->camera_rotate_key);
-		free(island);
-		island = NULL;
+	for( int y=0; y<MAX_CELLS_1D; y++) {
+		for( int x=0; x<MAX_CELLS_1D; x++ ){
+			FreeCellStack(island->bottom_cell[CellOffset(y, x)]); }
 	}
 }
+
 
 void IslandGenerateLand(Island* island){
 //TO BE DELETED, FOR DEBUGGING ----- START
@@ -106,27 +99,25 @@ void IslandUpdateTimeOfDay(Island* island){
 }
 
 void IslandUpdateCamera(Island* island, char user_inp){
-	if( (island->camera != NULL) && (island->camera_translate_key != NULL) && (island->camera_rotate_key != NULL) ){
-		UpdateMoveKeys(island->camera_translate_key, user_inp);
-		UpdateMoveKeys(island->camera_rotate_key, user_inp);
+	UpdateMoveKeys(&island->camera_translate_key, user_inp);
+	UpdateMoveKeys(&island->camera_rotate_key, user_inp);
 
-		TranslateCamera(island->camera, *island->camera_translate_key, *island->camera_rotate_key);
-		RotateCamera(island->camera, *island->camera_rotate_key, 20);		//MAGIC NUMBER
-	}
+	TranslateCamera(&island->camera, island->camera_translate_key, island->camera_rotate_key);
+	RotateCamera(&island->camera, island->camera_rotate_key, 5);		//MAGIC NUMBER
 }
 
 void IslandEngine(Island* island, char user_inp){
-	float cam_rot_z = island->camera->rotation;
+	float cam_rot_z = island->camera.rotation;
 	IslandUpdateCamera(island, user_inp);
-	for( int z=0; z<island->camera->origin->z; z++ ){
+	for( int z=0; z<island->camera.origin.z; z++ ){
 		for( int y=0; y<MAX_CELLS_1D; y++) {
 			for( int x=0; x<MAX_CELLS_1D; x++ ){
 				if( z == 0 ){
 					UpdateCellDrawOrigin(
 						island->bottom_cell[CellOffset(y, x)],
 						island->origin,
-						island->camera->origin,
-						island->camera->rotation
+						island->camera.origin,
+						island->camera.rotation
 					);
 				}
 				PrintCellFromStack(
@@ -140,9 +131,9 @@ void IslandEngine(Island* island, char user_inp){
 	}
 }
 
-void PrintIslandDebug(Island* island){
+void PrintIslandDebug(Island island){
 	mvprintw(0, 54, "island debug menu:");
-	mvprintw(1, 50, "camera origin: { %i, %i, %i }", island->camera->origin->y, island->camera->origin->x, island->camera->origin->z);
-	mvprintw(2, 50, "camera z rot: %f", island->camera->rotation);
-	mvprintw(3, 50, "time of day: %f", island->time_of_day);
+	mvprintw(1, 50, "camera origin: { %i, %i, %i }", island.camera.origin.y, island.camera.origin.x, island.camera.origin.z);
+	mvprintw(2, 50, "camera z rot: %f", island.camera.rotation);
+	mvprintw(3, 50, "time of day: %f", island.time_of_day);
 }

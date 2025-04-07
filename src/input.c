@@ -16,22 +16,22 @@ char GetCharInput(int argn, ...){
 	}
 }
 
-Keybind* InitKeybind(char key){
-	Keybind* init_keybind = malloc(sizeof(Keybind));
-	init_keybind->key = key;
-	init_keybind->is_pressed = 0;
+Keybind InitKeybind(char key){
+	Keybind init_keybind;
+	init_keybind.key = key;
+	init_keybind.is_pressed = 0;
 	return init_keybind;
 }
 
-MoveKeys* InitMoveKeys(char up, char down, char left, char right){
-	MoveKeys* init_move_keys = malloc(sizeof(MoveKeys));
-	init_move_keys->up = InitKeybind(up);
-	init_move_keys->down = InitKeybind(down);
-	init_move_keys->left = InitKeybind(left);
-	init_move_keys->right = InitKeybind(right);
+MoveKeys InitMoveKeys(char up, char down, char left, char right){
+	MoveKeys init_move_keys;
+	init_move_keys.up = InitKeybind(up);
+	init_move_keys.down = InitKeybind(down);
+	init_move_keys.left = InitKeybind(left);
+	init_move_keys.right = InitKeybind(right);
 	return init_move_keys;
 }
-
+/*
 void FreeKeybind(Keybind* keybind){
 	if( keybind != NULL ){
 		free(keybind);
@@ -49,25 +49,26 @@ void FreeMoveKeys(MoveKeys* move_keys){
 		move_keys = NULL;
 	}
 }
+*/
 
 void UpdateMoveKeys(MoveKeys* move_keys, char key_pressed){
-	if( key_pressed == move_keys->up->key)
-		move_keys->up->is_pressed = 1;
+	if( key_pressed == move_keys->up.key)
+		move_keys->up.is_pressed = 1;
 	else
-		move_keys->up->is_pressed = 0;
+		move_keys->up.is_pressed = 0;
 
-	if( key_pressed == move_keys->down->key)
-		move_keys->down->is_pressed = 1;
+	if( key_pressed == move_keys->down.key)
+		move_keys->down.is_pressed = 1;
 	else
-		move_keys->down->is_pressed = 0;
+		move_keys->down.is_pressed = 0;
 
-	if( key_pressed == move_keys->left->key)
-		move_keys->left->is_pressed = 1;
+	if( key_pressed == move_keys->left.key)
+		move_keys->left.is_pressed = 1;
 	else
-		move_keys->left->is_pressed = 0;
+		move_keys->left.is_pressed = 0;
 
-	if( key_pressed == move_keys->right->key)
-		move_keys->right->is_pressed = 1;
+	if( key_pressed == move_keys->right.key)
+		move_keys->right.is_pressed = 1;
 	else
-		move_keys->right->is_pressed = 0;
+		move_keys->right.is_pressed = 0;
 }
